@@ -138,35 +138,46 @@ Task("virtualbox-03-cleanup")
     StartProcess("packer", RunPacker(OSES, "./output-{0}-updates_wmf5/{0}-updates_wmf5.ovf", jsonToBuild));
 });
 
+Task("virtualbox-04-ngen")
+  .IsDependentOn("virtualbox-03-cleanup")
+  .Does(() =>
+{
+    string jsonToBuild = $"{virtualBoxBuilderPath}/04-ngen.json";
+    StartProcess("packer", RunPacker(OSES, "./output-{0}-cleanup/{0}-cleanup.ovf", jsonToBuild));
+});
+
 Task("virtualbox-local")
-  .IsDependentOn("virtualbox-03-cleanup")
+  .IsDependentOn("virtualbox-04-ngen")
   .Does(() =>
 {
-    string jsonToBuild = $"{virtualBoxBuilderPath}/04-local.json";
-    StartProcess("packer", RunPacker(OSES, "./output-{0}-cleanup/{0}-cleanup.ovf", jsonToBuild));
+    string jsonToBuild = $"{virtualBoxBuilderPath}/05-local.json";
+    StartProcess("packer", RunPacker(OSES, "./output-{0}-ngen/{0}-ngen.ovf", jsonToBuild));
 });
 
-Task("virtualbox-vagrant-cloud")
-  .IsDependentOn("virtualbox-03-cleanup")
-  .Does(() =>
-{
-    string jsonToBuild = $"{virtualBoxBuilderPath}/04-vagrant-cloud.json";
-    StartProcess("packer", RunPacker(OSES, "./output-{0}-cleanup/{0}-cleanup.ovf", jsonToBuild));
-});
+// Don't publish to vagrant cloud
+//Task("virtualbox-vagrant-cloud")
+//  .IsDependentOn("virtualbox-04-cleanup")
+//  .Does(() =>
+//{
+//    string jsonToBuild = $"{virtualBoxBuilderPath}/05-vagrant-cloud.json";
+//    StartProcess("packer", RunPacker(OSES, "./output-{0}-ngen/{0}-ngen.ovf", jsonToBuild));
+//});
+//
 
-// Hyper-V Tasks
-Task("hyperv-local")
-  .Does(() =>
-{
-    string jsonToBuild = $"{hypervBuilderPath}/01-windows-local.json";
-    StartProcess("packer", RunPacker(OSES, "", jsonToBuild));
-});
-
-Task("hyperv-vagrant-cloud")
-  .Does(() =>
-{
-    string jsonToBuild = $"{hypervBuilderPath}/01-windows-vagrant-cloud.json";
-    StartProcess("packer", RunPacker(OSES, "", jsonToBuild));
-});
+// Not interested in Hyper-V machines at the moment
+//// Hyper-V Tasks
+//Task("hyperv-local")
+//  .Does(() =>
+//{
+//    string jsonToBuild = $"{hypervBuilderPath}/01-windows-local.json";
+//    StartProcess("packer", RunPacker(OSES, "", jsonToBuild));
+//});
+//
+//Task("hyperv-vagrant-cloud")
+//  .Does(() =>
+//{
+//    string jsonToBuild = $"{hypervBuilderPath}/01-windows-vagrant-cloud.json";
+//    StartProcess("packer", RunPacker(OSES, "", jsonToBuild));
+//});
 
 RunTarget(buildTarget);

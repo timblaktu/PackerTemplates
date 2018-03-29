@@ -19,8 +19,8 @@
   guestOSType: Windows2012_64
   isoChecksum: 3bb1c60417e9aeb3f4ce0eb02189c0c84a1c6691
   isoURL: http://care.dlservice.microsoft.com/dl/download/1/6/F/16FA20E6-4662-482A-920B-1A45CF5AAE3C/14393.0.160715-1616.RS1_RELEASE_SERVER_EVAL_X64FRE_EN-US.ISO
-# - Name: Windows10
-#   osName: win10
-#   guestOSType: Windows10_64
-#   isoChecksum: 56ab095075be28a90bc0b510835280975c6bb2ce
-#   isoURL: http://care.dlservice.microsoft.com/dl/download/C/3/9/C399EEA8-135D-4207-92C9-6AAB3259F6EF/10240.16384.150709-1700.TH1_CLIENTENTERPRISEEVAL_OEMRET_X64FRE_EN-US.ISO
+- Name: Windows10
+  osName: win10
+  guestOSType: Windows10_64
+  isoChecksum: 1851a0007321fa084145ea24b8d30bf7a72bf1c6
+  isoURL: c:\Users\tblack\Downloads\SW_DVD9_Win_Pro_10_1709.1_64BIT_English_Pro_Ent_EDU_N_MLF_X21-67518.ISO
