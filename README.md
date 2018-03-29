@@ -1,157 +1,46 @@
-# Windows Packer Templates
+# Overview
+[Packer](https://www.packer.io/intro/getting-started/install.html) provides a reproduceable build system for creating Virtual Machine Templates used at Biamp.
+You do not need to use Packer if you are only using our Virtual Machine Templates, and are not tasked with maintaining them.
 
-<!-- TOC depthFrom:2 -->
+The templates and scripts in this project are used with [Packer](https://www.packer.io/intro/getting-started/install.html) to create the Virtual Machine templates that
+Biamp Developers use with the [vagrant project](../vagrant) to create and manage their Virtual Machine instances. 
 
-- [Introduction](#introduction)
-    - [Supported Builders](#supported-builders)
-    - [Supported Operating Systems](#supported-operating-systems)
-    - [Pre-build Images](#pre-build-images)
-- [Prepare your system to run Packer](#prepare-your-system-to-run-packer)
-    - [Ubuntu](#ubuntu)
-    - [Windows](#windows)
-- [Running the Build Script](#running-the-build-script)
-    - [Building Vagrant Cloud Images](#building-vagrant-cloud-images)
-    - [Building Hyper-V Images](#building-hyper-v-images)
-    - [Building VirtualBox Images](#building-virtualbox-images)
-- [Using the Vagrant Images](#using-the-vagrant-images)
+Each subfolder of this project constitutes a recipe for creating a Virtual Machine template that represents 
+the smallest possible version of a uniquely-configured base OS that someone needs at Biamp. 
 
-<!-- /TOC -->
+The output of Packer is a minimal Virtual Machine image, e.g. a VirtualBox .vdi or a Vagrant .box file, that 
+can be further customized with Ansible or other provisioners, as well as a base Vagrantfile that can be used
+by developers to use the template.
 
-## Introduction
-This repository contains build scripts to golden images using Packer.
+The VM images output from Packer are of course huge. These are considered intermediate files and are ignored by
+this git repo. They are manually placed on [(TODO: fix this link)this http server](), where they are accessible
+to developers on the Biamp network.
 
-Interested in some best practices when using Packer with Windows? Check out [my blog post on the topic](https://hodgkins.io/best-practices-with-packer-and-windows).
+# HOWTO Create a Virtual Machine Template
+## Installation Requirements
+1. Install [Vagrant](https://www.vagrantup.com/docs/installation).
+2. Install [Packer](https://www.packer.io/intro/getting-started/install.html).
+3. Clone this repo, making sure to update all of its submodules.
 
-### Supported Builders
+## Doing the Packer Build (for Windows 10 Pro)
 
-The supported builds are:
-* VirtualBox
-* Hyper-V
+See [the original Windows Packer Templates readme](README.windows.md) for details.
 
-### Supported Operating Systems
+The entire Packer build can be done from running the following command from the packer directory:
+    .\build.ps1 --settings_skipverification=true -Target "virtualbox-local" -os="Windows10"
+        
+ The Windows 10 Pro packer build is composed of multiple stages to facilitate resumption after errors:
+ 
+    
+# References
+## Windows Packer Templates
+1. Much of the windows Packer work was borrowed/gleaned from the work of [Matt Wrock](https://github.com/mwrock/packer-templates) and [Matt Hodge](https://github.com/MattHodge/PackerTemplates).
+2. http://huestones.co.uk/node/305
+3. http://www.hurryupandwait.io/blog/how-can-we-most-optimally-shrink-a-windows-base-image
+4. http://www.hurryupandwait.io/blog/creating-windows-base-images-for-virtualbox-and-hyper-v-using-packer-boxstarter-and-vagrant
+5. https://hodgkins.io/best-practices-with-packer-and-windows#best-practices
+6. 
 
-The `build.supported_os.yaml` file contains the list of Operating Systems that are supported and their settings.
-
-The supported Operating Systems to build are:
-* Windows2012R2Core
-* Windows2012R2
-* Windows2016StdCore
-* Windows2016Std
-
-### Pre-build Images
-
-If you just want to download the pre-build Vagrant images, download them from [Vagrant Cloud](https://app.vagrantup.com/MattHodge).
-
-## Prepare your system to run Packer
-
-Before you can run the build scripts, you need to prepare your system.
-
-### Ubuntu
-
-> :white_check_mark: Tested on Ubuntu 16.04
-
-Mono is required to run the build script.
-
-```bash
-# Install Mono
-sudo apt-get install mono-complete -y
-
-# Give the script execute permission
-chmod +x build.sh
-```
-
-Additionally you will need to install:
-
-* Packer
-* VirtualBox
-
-### Windows
-
-> :white_check_mark: Tested on Windows 10 Pro
-
-```powershell
-# Set PowerShell Execution Policy
-Set-ExecutionPolicy RemoteSigned -Force
-
-# Install Chocolatey
-iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
-
-# Install Packer
-choco install packer -y
-
-# Install Hyper-V
-Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Hyper-V -All
-
-# Create an external Hyper-V Switch
-# Commands may vary depending on your system.
-Get-NetAdapter
-
-# Find the name of the network adapter (make sure its status is also not disconnected)
-
-# Create a new VM Switch using the name of the network adapter
-New-VMSwitch -Name "External VM Switch" -AllowManagementOS $true -NetAdapterName "<Your Adapter Name Here>"
-```
-
-## Running the Build Script
-
-Depending on your platform, you either need to run:
-* `build.ps1` on Windows
-* `build.sh` on Linux / MacOS.
-
-### Building Vagrant Cloud Images
-If you are building images for Vagrant Cloud, you need to set the following environment variables:
-
-```powershell
-# Windows
-
-$env:ATLAS_TOKEN = "ABC123XYZ"
-
-$env:ATLAS_USERNAME = "MattHodge" # Username to upload the boxes under
-
-$env:ATLAS_VERSION = "1.0.1" # Version of the box being uploaded
-```
-
-```bash
-# MacOS / Linux
-
-export ATLAS_TOKEN="ABC123XYZ"
-
-export ATLAS_USERNAME="MattHodge" # Username to upload the boxes under
-
-export ATLAS_VERSION="1.0.1" # Version of the box being uploaded
-```
-
-
-### Building Hyper-V Images
-
-The following commands will build you Hyper-V Images
-
-```powershell
-# Builds Windows 2016 Standard Core and runs the Vagrant post processor (local).
-.\build.ps1 -Target "hyperv-local" -os="Windows2016StdCore"
-
-# Builds Windows 2012 R2 Core and runs the Atlas post processor.
-.\build.ps1 -Target "hyperv-vagrant-cloud" --os="Win2012R2Core"
-```
-
-### Building VirtualBox Images
-
-The following commands will build you VirtualBox Images
-
-```bash
-# Builds Windows 2016 Standard Core and runs the Vagrant post processor (local).
-./build.sh --target "virtualbox-local" -os="Windows2016StdCore"
-
-# Builds Windows 2012 R2 Core and runs the Atlas post processor.
-./build.sh --target "virtualbox-vagrant-cloud" -os="Win2012R2Core"
-```
-
-## Using the Vagrant Images
-
-If you aren't pushing your boxes to Atlas, you can import the `*.box` files for use in Vagrant:
-
-```powershell
-vagrant box add .\win2016stdcore-wmf5-nocm-hyperv.box --name Windows2016StdCore
-```
-
-You can also find all the boxes ready to be used with `vagrant up` over at my [VagrantBoxes Repository](https://github.com/MattHodge/VagrantBoxes).
+## Debian Packer Templates
+1. https://github.com/geerlingguy/packer-debian-9/blob/master/debian9.json
+2. 
